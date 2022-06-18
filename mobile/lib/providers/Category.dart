@@ -1,21 +1,17 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart' as Dio;
 import 'package:flutter/material.dart';
 import 'package:mobile/models/CategoryModel.dart';
 import '../services/Dio.dart';
 
-import 'package:flutter/material.dart';
-
 class Category extends ChangeNotifier {
-  final String authToken;
-  Category(this.authToken);
-
   List<CategoryModel> _items = [];
 
   List<CategoryModel> get items => _items;
 
-  Future<void> getCategory() async {
+  int findIdCategory(String? name) =>
+      items.firstWhere((element) => element.name == name).id;
+
+  Future<void> getCategory({String? authToken}) async {
     try {
       Dio.Response response = await dio().get(
         '/api/categories',
@@ -28,10 +24,7 @@ class Category extends ChangeNotifier {
       final List<CategoryModel> loadedProducts = [];
 
       data.forEach((prodData) {
-        loadedProducts.add(CategoryModel(
-          id: prodData['id'],
-          name: prodData['name'],
-        ));
+        loadedProducts.add(CategoryModel.fromJson(prodData));
       });
 
       _items = loadedProducts;
@@ -40,9 +33,5 @@ class Category extends ChangeNotifier {
     } catch (error) {
       throw error;
     }
-  }
-
-  void selectedCategory(Map<String, dynamic> category) {
-    print(category);
   }
 }

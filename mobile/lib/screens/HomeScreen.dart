@@ -1,31 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:mobile/providers/Category.dart';
 import 'package:mobile/widgets/DropdownCategory.dart';
+import 'package:mobile/widgets/ProductList.dart';
 import '../providers/Auth.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
+  String token;
+  HomeScreen({required this.token});
+
   @override
   Widget build(BuildContext context) {
-    Provider.of<Category>(context, listen: false).getCategory();
+    Provider.of<Category>(context, listen: false).getCategory(authToken: token);
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Hello'),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            Container(
-              child: Column(
-                children: [const DropdownCategory()],
-              ),
-            )
-          ],
-        ),
+      body: Column(
+        children: [
+          const DropdownCategory(),
+          Expanded(
+            child: const ProductList(),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: Consumer<Auth>(

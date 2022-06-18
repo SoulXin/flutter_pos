@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:mobile/providers/Category.dart';
+import 'package:mobile/providers/Products.dart';
+import 'package:mobile/providers/Carts.dart';
 import 'screens/HomeScreen.dart';
 import 'package:provider/provider.dart';
 import 'providers/Auth.dart';
@@ -29,9 +31,16 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (ctx) => Auth(),
         ),
-        ChangeNotifierProxyProvider<Auth, Category>(
-          create: (ctx) => Category(''),
-          update: (context, auth, previousMessages) => Category(auth.authToken),
+        ChangeNotifierProvider(
+          create: (ctx) => Category(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Products>(
+          create: (ctx) => Products(''),
+          update: (context, data, previousMessages) => Products(data.authToken),
+        ),
+        ChangeNotifierProxyProvider<Products, Carts>(
+          create: (ctx) => Carts(''),
+          update: (context, data, previousMessages) => Carts(data.authToken),
         ),
       ],
       child: Consumer<Auth>(
@@ -43,7 +52,11 @@ class MyApp extends StatelessWidget {
             accentColor: Colors.deepOrange,
             fontFamily: 'Lato',
           ),
-          home: authData.isAuth ? HomeScreen() : AuthScreen(),
+          home: authData.isAuth
+              ? HomeScreen(
+                  token: authData.authToken,
+                )
+              : AuthScreen(),
           routes: {},
         ),
       ),

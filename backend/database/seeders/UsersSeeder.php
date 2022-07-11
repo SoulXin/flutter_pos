@@ -18,5 +18,10 @@ class UsersSeeder extends Seeder
             ['username' => 'admin'],
         	['password' => bcrypt('admin')],
         );
+
+        User::firstOrCreate(
+            ['username' => 'admin2'],
+        	['password' => bcrypt('admin2')],
+        );
     }
 }

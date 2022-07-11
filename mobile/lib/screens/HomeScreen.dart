@@ -1,27 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/providers/Category.dart';
-import 'package:mobile/widgets/DropdownCategory.dart';
-import 'package:mobile/widgets/ProductList.dart';
-import '../providers/Auth.dart';
 import 'package:provider/provider.dart';
+import '../models/MessageException.dart';
+import '../providers/Carts.dart';
+import '../providers/Category.dart';
+import '../providers/Auth.dart';
+import '../screens/CartScreen.dart';
+import '../screens/MasterScreen.dart';
+import '../widgets/Cart/Badge.dart';
+import '../widgets/Category/DropdownCategory.dart';
+import '../widgets/Product/ProductItem.dart';
+import '../widgets/ShowDialog.dart';
 
 class HomeScreen extends StatelessWidget {
-  String token;
-  HomeScreen({required this.token});
+  final String token;
+  const HomeScreen({Key? key, required this.token}) : super(key: key);
+
+  void fetchDataCategory(BuildContext context) async {
+    try {
+      await Provider.of<Category>(context, listen: false).fetchData();
+    } on MessageException catch (error) {
+      showErrorDialog(context, error.message);
+    } catch (error) {
+      showErrorDialog(context, error.toString());
+    }
+  }
+
+  void fetchDataCart(BuildContext context) async {
+    try {
+      await Provider.of<Carts>(context, listen: false).fetchData();
+    } on MessageException catch (error) {
+      showErrorDialog(context, error.message);
+    } catch (error) {
+      showErrorDialog(context, error.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<Category>(context, listen: false).getCategory(authToken: token);
+    fetchDataCategory(context);
+    fetchDataCart(context);
 
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
-        title: Text('Hello'),
+        title: const Text('Hello'),
+        backgroundColor: Theme.of(context).accentColor,
+        actions: [
+          Consumer<Carts>(
+            builder: (_, cartData, ch) => Badge(
+              child: ch as Widget,
+              value: cartData.itemCount.toString(),
+              color: Colors.black,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                Navigator.of(context).pushNamed(CartScreen.routeName);
+              },
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
           const DropdownCategory(),
           Expanded(
-            child: const ProductList(),
+            child: const ProductItem(
+              productScreen: false,
+            ),
           ),
         ],
       ),
@@ -42,12 +88,27 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Theme.of(context).accentColor,
                   ),
                 ),
                 ListTile(
-                  title: Text('Logout'),
-                  leading: Icon(Icons.logout),
+                  title: const Text('Utama'),
+                  leading: const Icon(Icons.home),
+                  onTap: () {
+                    Navigator.of(context).pushReplacementNamed('/');
+                  },
+                ),
+                ListTile(
+                  title: const Text('Master'),
+                  leading: const Icon(Icons.account_box),
+                  onTap: () {
+                    Navigator.of(context)
+                        .pushReplacementNamed(MasterScreen.routeName);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Logout'),
+                  leading: const Icon(Icons.logout),
                   onTap: () {
                     Provider.of<Auth>(context, listen: false).logout();
                   },

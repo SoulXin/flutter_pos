@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/providers/Category.dart';
-import 'package:mobile/providers/Products.dart';
 import 'package:provider/provider.dart';
+import '../../providers/Category.dart';
+import '../../providers/Products.dart';
 
 class DropdownCategory extends StatefulWidget {
   const DropdownCategory({Key? key}) : super(key: key);
@@ -11,21 +11,32 @@ class DropdownCategory extends StatefulWidget {
 }
 
 class _DropdownCategoryState extends State<DropdownCategory> {
-  String? selected = null;
+  String? selected;
 
   @override
   Widget build(BuildContext context) {
     final data = Provider.of<Category>(context, listen: true).items;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 5),
       child: DropdownButton(
+        dropdownColor: Theme.of(context).backgroundColor,
         isExpanded: true,
-        hint: Text('Kategory'),
+        hint: Text(
+          'Kategori',
+          style: TextStyle(
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
         value: selected,
         items: data.map((item) {
-          return new DropdownMenuItem(
-            child: new Text(item.name),
+          return DropdownMenuItem(
+            child: Text(
+              item.name,
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
             value: item.name,
           );
         }).toList(),

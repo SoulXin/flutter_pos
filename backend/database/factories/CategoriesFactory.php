@@ -16,7 +16,7 @@ class CategoriesFactory extends Factory
     public function definition()
     {
         return [
-            'users_id' => 1,
+            'user_id' => $this->faker->unique(true)->numberBetween(1, 2),
             'name' => $this->faker->userName
         ];
     }

@@ -3,6 +3,10 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:mobile/providers/Category.dart';
 import 'package:mobile/providers/Products.dart';
 import 'package:mobile/providers/Carts.dart';
+import 'package:mobile/screens/CartScreen.dart';
+import 'package:mobile/screens/Category/CategoryScreen.dart';
+import 'package:mobile/screens/MasterScreen.dart';
+import 'package:mobile/screens/Product/ProductScreen.dart';
 import 'screens/HomeScreen.dart';
 import 'package:provider/provider.dart';
 import 'providers/Auth.dart';
@@ -23,24 +27,35 @@ Future initialization(BuildContext? context) async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Color.fromRGBO(0, 54, 56, 1);
+    final secondColor = Color.fromRGBO(5, 80, 82, 1);
+    final thirdColor = Color.fromRGBO(83, 184, 187, 1);
+    final fourthColor = Color.fromRGBO(243, 242, 201, 1);
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
           create: (ctx) => Auth(),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => Category(),
+        ChangeNotifierProxyProvider<Auth, Category>(
+          create: (ctx) => Category(''),
+          update: (context, data, previousData) => Category(data.authToken),
         ),
-        ChangeNotifierProxyProvider<Auth, Products>(
-          create: (ctx) => Products(''),
-          update: (context, data, previousMessages) => Products(data.authToken),
+        ChangeNotifierProxyProvider<Category, Products>(
+          create: (ctx) => Products('', null),
+          update: (context, data, previousData) =>
+              Products(data.authToken, data),
         ),
         ChangeNotifierProxyProvider<Products, Carts>(
-          create: (ctx) => Carts(''),
-          update: (context, data, previousMessages) => Carts(data.authToken),
+          create: (ctx) => Carts('', []),
+          update: (context, data, previousData) => Carts(
+            data.authToken,
+            previousData == null ? [] : previousData.items,
+          ),
         ),
       ],
       child: Consumer<Auth>(
@@ -48,8 +63,11 @@ class MyApp extends StatelessWidget {
           title: 'mobile',
           theme: ThemeData(
             // is not restarted.
-            primarySwatch: Colors.blue,
-            accentColor: Colors.deepOrange,
+            primaryColor: primaryColor,
+            accentColor: secondColor,
+            hintColor: thirdColor,
+            backgroundColor: fourthColor,
+
             fontFamily: 'Lato',
           ),
           home: authData.isAuth
@@ -57,7 +75,12 @@ class MyApp extends StatelessWidget {
                   token: authData.authToken,
                 )
               : AuthScreen(),
-          routes: {},
+          routes: {
+            CartScreen.routeName: (ctx) => const CartScreen(),
+            MasterScreen.routeName: (ctx) => const MasterScreen(),
+            CategoryScreen.routeName: (ctx) => const CategoryScreen(),
+            ProductScreen.routeName: (ctx) => const ProductScreen(),
+          },
         ),
       ),
     );

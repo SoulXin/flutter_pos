@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '/screens/SplashScreen.dart';
 import '../utils/StorageToken.dart';
 import 'package:provider/provider.dart';
@@ -57,7 +58,10 @@ class _AuthCardState extends State<AuthCard> {
     checkToken();
   }
 
+  // static final _storage = FlutterSecureStorage();
+
   Future checkToken() async {
+    // await _storage.deleteAll();
     String token = await StorageToken.getToken() ?? '';
     if (token.isNotEmpty) {
       Provider.of<Auth>(context, listen: false).setUser(token: token);
@@ -71,14 +75,14 @@ class _AuthCardState extends State<AuthCard> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('An Error Occured!'),
+        title: const Text('An Error Occured!'),
         content: Text(message),
         actions: <Widget>[
           FlatButton(
             onPressed: () {
               Navigator.of(ctx).pop();
             },
-            child: Text('Okay'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -196,7 +200,7 @@ class _AuthCardState extends State<AuthCard> {
                             : null,
                       ),
                     if (_isLoading)
-                      CircularProgressIndicator()
+                      const CircularProgressIndicator()
                     else
                       Container(
                         child: Row(

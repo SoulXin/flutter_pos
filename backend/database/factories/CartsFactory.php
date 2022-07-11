@@ -16,9 +16,9 @@ class CartsFactory extends Factory
     public function definition()
     {
         return [
-            'users_id' => 1,
+            'user_id' => $this->faker->unique(true)->numberBetween(1, 2),
             'products_id' => $this->faker->unique(true)->numberBetween(1, 10),
-            'amount' => $this->faker->unique(true)->numberBetween(1, 3)
+            'quantity' => $this->faker->unique(true)->numberBetween(1, 3)
         ];
     }
 }

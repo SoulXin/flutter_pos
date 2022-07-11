@@ -9,16 +9,9 @@ use App\Models\Categories;
 
 class CategoriesController extends Controller
 {
-    public function index(){
-        $data = Categories::get();
+    public function index(Request $request ){
+        $data = $request->user()->categories()->get();
         
-        $this->response->data = $data;
-        return $this->json();
-    }
-
-    public function get_categories_product(Categories $categories){
-        $data = $categories->products()->get();
-
         $this->response->data = $data;
         return $this->json();
     }
@@ -32,48 +25,50 @@ class CategoriesController extends Controller
         if ($validator->fails()) {
             $this->code = 400;
             $this->response->status = false;
-            $this->response->message = $validator->errors();
+            $this->response->message = $validator->errors()->first();
             $this->response->errors = $validator->fails();
             return $this->json();
         }
 
         $newCategories = new Categories;
-        $newCategories->users_id = 1;
+        $newCategories->user_id = 1;
         $newCategories->name = $request->name;
         $newCategories->save();
 
+        $this->response->message = __('resources.create_success');
         return $this->json();
     }
 
-    public function update(Request $request, $categories){
-        $data = Categories::find($categories);
-
-        if(is_null($data)){
-            $this->code = 400;
-            $this->response->status = false;
-            $this->response->message = "Data not found";
-            $this->response->errors = true;
-            return $this->json();
-        } 
-
-        $data->name = $request->name;
-        $data->save();
-
+    public function detail(Categories $categories){
+        $this->response->data = $categories;
         return $this->json();
     }
 
-    public function delete($categories){
-        $data = Categories::find($categories);
+    public function update(Request $request,Categories $categories){
+        $rules = [
+            'name' => 'required|string'
+        ];
 
-        if(is_null($data)){
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
             $this->code = 400;
             $this->response->status = false;
-            $this->response->message = "Data not found";
-            $this->response->errors = true;
+            $this->response->message = $validator->errors()->first();
+            $this->response->errors = $validator->fails();
             return $this->json();
-        } 
+        }
 
-        $data->delete();
+        $categories->name = $request->name;
+        $categories->save();
+
+        $this->response->message = __('resources.update_success');
+        return $this->json();
+    }
+
+    public function delete(Categories $categories){
+        $categories->delete();
+
+        $this->response->message = __('resources.delete_success');
         return $this->json();
     }
 }

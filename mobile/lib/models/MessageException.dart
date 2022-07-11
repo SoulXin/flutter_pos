@@ -1,7 +1,7 @@
-class HttpException implements Exception {
+class MessageException implements Exception {
   final String message;
 
-  HttpException(this.message);
+  MessageException(this.message);
 
   @override
   String toString() {

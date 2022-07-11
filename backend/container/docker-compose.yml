@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+  nginx:
+    image: nginx:1.20.1
+    container_name: nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - backend
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:delegated
+      - ./html:/var/www/html:delegated
+      - ../../backend:/var/www/html/backend:delegated
+    networks:
+      backend_network:
+        ipv4_address: 172.12.0.3
+  backend:
+    working_dir: /var/www/html/backend
+    build:
+      context: ./
+      dockerfile: php/php.Dockerfile
+    image: php-fpm-8.0
+    container_name: backend
+    volumes:
+      - ./php/cronjob:/etc/cron.d/cronjob:delegated
+      - ../../backend:/var/www/html/backend:delegated
+    extra_hosts:
+      - "backend.local:172.12.0.3"
+    networks:
+      backend_network:
+        ipv4_address: 172.12.0.4
+  mariadb:
+    image: mariadb:10.5.10
+    container_name: mariadb
+    restart: 'on-failure'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: flutter_pos
+    ports:
+      - "3306:3306"
+    networks:
+      backend_network:
+        ipv4_address: 172.12.0.2
+  redis:
+    image: redis:6.2.5-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      backend_network:
+        ipv4_address: 172.12.0.7
+volumes:
+  backend-mysql-data:
+    external: true
+
+networks:
+  backend_network:
+    name: backend_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.12.0.0/16

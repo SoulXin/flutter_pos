@@ -1,0 +1,1 @@
+create schema `flutter_pos` collate utf8mb4_unicode_ci;

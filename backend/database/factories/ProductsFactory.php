@@ -16,7 +16,7 @@ class ProductsFactory extends Factory
     public function definition()
     {
         return [
-            'users_id' => 1,
+            'user_id' => $this->faker->unique(true)->numberBetween(1, 2),
             'categories_id' => $this->faker->unique(true)->numberBetween(1, 5),
             'name' => 'Product '. $this->faker->userName,
             'price' => $this->faker->unique(true)->numberBetween(1000, 5000)

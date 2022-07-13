@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart' as Dio;
 import 'package:flutter/material.dart';
+import 'package:mobile/models/MessageException.dart';
 import '../models/User.dart';
 import '../services/Dio.dart';
 
@@ -41,7 +42,7 @@ class Auth extends ChangeNotifier {
 
   void logout() async {
     try {
-      Dio.Response response = await dio().post('/api/logout',
+      await dio().post('/api/logout',
           options: Dio.Options(headers: {'Authorization': 'Bearer $_token'}));
 
       cleanUp();
@@ -51,7 +52,7 @@ class Auth extends ChangeNotifier {
     }
   }
 
-  void setUser({required String token}) async {
+  Future<void> setUser({required String token}) async {
     try {
       Dio.Response response = await dio().get('/api/profile',
           options: Dio.Options(headers: {'Authorization': 'Bearer $token'}));
@@ -60,8 +61,12 @@ class Auth extends ChangeNotifier {
       _user = User.fromJson(response.data);
       storeToken(token: token);
       notifyListeners();
-    } catch (error) {
-      throw error;
+    } on Dio.DioError catch (error) {
+      if (error.response!.statusCode! >= 500) {
+        throw Exception(error.response!.data['message']);
+      }
+
+      throw MessageException(error.response!.data['message']);
     }
   }
 

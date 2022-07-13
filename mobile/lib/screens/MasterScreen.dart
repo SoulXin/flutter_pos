@@ -70,7 +70,7 @@ class MasterScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.list,
                     size: 70,
                   ),
@@ -97,7 +97,7 @@ class MasterScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.table_restaurant,
                     size: 70,
                   ),
@@ -117,18 +117,18 @@ class MasterScreen extends StatelessWidget {
             return ListView(
               children: [
                 DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).accentColor,
+                  ),
                   child: Column(
                     children: [
                       CircleAvatar(
                         backgroundImage: NetworkImage(auth.user.avatar),
                         radius: 35,
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Text(auth.user.username),
                     ],
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).accentColor,
                   ),
                 ),
                 ListTile(

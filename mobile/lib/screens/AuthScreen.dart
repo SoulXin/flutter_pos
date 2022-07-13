@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mobile/models/MessageException.dart';
+import 'package:mobile/widgets/ShowDialog.dart';
 import '/screens/SplashScreen.dart';
 import '../utils/StorageToken.dart';
 import 'package:provider/provider.dart';
@@ -10,13 +12,15 @@ enum AuthMode { Register, Login }
 class AuthScreen extends StatelessWidget {
   static const routeName = '/auth';
 
+  const AuthScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: Container(
+        child: SizedBox(
           height: deviceSize.height,
           width: deviceSize.width,
           child: Column(
@@ -42,13 +46,15 @@ class AuthCard extends StatefulWidget {
 
 class _AuthCardState extends State<AuthCard> {
   final GlobalKey<FormState> _formKey = GlobalKey();
+  static const storage = FlutterSecureStorage();
+
   AuthMode _authMode = AuthMode.Login;
-  Map<String, String> _authData = {
+  final Map<String, String> _authData = {
     'username': '',
     'password': '',
   };
   var _isLoading = false;
-  var _checkToken = false;
+  var _checkToken = true;
 
   final _passwordController = TextEditingController();
 
@@ -58,17 +64,29 @@ class _AuthCardState extends State<AuthCard> {
     checkToken();
   }
 
-  // static final _storage = FlutterSecureStorage();
-
-  Future checkToken() async {
-    // await _storage.deleteAll();
+  void checkToken() async {
     String token = await StorageToken.getToken() ?? '';
+
     if (token.isNotEmpty) {
-      Provider.of<Auth>(context, listen: false).setUser(token: token);
-      setState(() {
-        _checkToken = true;
-      });
+      if (!mounted) return;
+
+      try {
+        await Provider.of<Auth>(context, listen: false).setUser(token: token);
+      } on MessageException catch (error) {
+        if (error.message.contains('Unauthenticated')) {
+          await storage.deleteAll();
+        }
+
+        if (!mounted) return;
+        showErrorDialog(context, error.message);
+      } catch (error) {
+        showErrorDialog(context, error.toString());
+      }
     }
+
+    setState(() {
+      _checkToken = false;
+    });
   }
 
   void _showErrorDialog(String message) {
@@ -138,12 +156,12 @@ class _AuthCardState extends State<AuthCard> {
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
     final ButtonStyle style = ElevatedButton.styleFrom(
-      textStyle: TextStyle(fontSize: 15),
+      textStyle: const TextStyle(fontSize: 15),
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
 
     return _checkToken
-        ? SplashScreen()
+        ? const SplashScreen()
         : Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
@@ -154,14 +172,14 @@ class _AuthCardState extends State<AuthCard> {
               constraints: BoxConstraints(
                   minHeight: _authMode == AuthMode.Register ? 320 : 260),
               width: deviceSize.width * 0.75,
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'Username'),
+                      decoration: const InputDecoration(labelText: 'Username'),
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'Invalid username!';
@@ -173,7 +191,7 @@ class _AuthCardState extends State<AuthCard> {
                       },
                     ),
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'Password'),
+                      decoration: const InputDecoration(labelText: 'Password'),
                       obscureText: true,
                       controller: _passwordController,
                       validator: (value) {
@@ -188,8 +206,8 @@ class _AuthCardState extends State<AuthCard> {
                     if (_authMode == AuthMode.Register)
                       TextFormField(
                         enabled: _authMode == AuthMode.Register,
-                        decoration:
-                            InputDecoration(labelText: 'Confirm Password'),
+                        decoration: const InputDecoration(
+                            labelText: 'Confirm Password'),
                         obscureText: true,
                         validator: _authMode == AuthMode.Register
                             ? (value) {
@@ -202,24 +220,23 @@ class _AuthCardState extends State<AuthCard> {
                     if (_isLoading)
                       const CircularProgressIndicator()
                     else
-                      Container(
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: <Widget>[
-                              ElevatedButton(
-                                child: Text(_authMode == AuthMode.Login
-                                    ? 'Login'
-                                    : 'Register'),
-                                onPressed: _submit,
-                                style: style,
-                              ),
-                              ElevatedButton(
-                                child: Text(
-                                    '${_authMode == AuthMode.Login ? 'Register' : 'Login'} Instead'),
-                                onPressed: _switchAuthMode,
-                                style: style,
-                              ),
-                            ]),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          ElevatedButton(
+                            onPressed: _submit,
+                            style: style,
+                            child: Text(_authMode == AuthMode.Login
+                                ? 'Login'
+                                : 'Register'),
+                          ),
+                          ElevatedButton(
+                            onPressed: _switchAuthMode,
+                            style: style,
+                            child: Text(
+                                '${_authMode == AuthMode.Login ? 'Register' : 'Login'} Instead'),
+                          ),
+                        ],
                       )
                   ],
                 ),
